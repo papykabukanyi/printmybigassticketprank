@@ -44,6 +44,7 @@
     "morgan": "^1.10.0",
     "multer": "^2.0.1",
     "nodemailer": "^7.0.5",
+    "paypal-rest-sdk": "^1.8.1",
     "qrcode": "^1.5.4",
     "redis": "^5.6.0",
     "uuid": "^11.1.0"

@@ -72,73 +72,57 @@ router.post('/create-payment', authMiddleware, [
         const orderId = await db.createOrder(orderData);
 
         // Create PayPal payment
-        const accessToken = await getPayPalAccessToken();
-        
-        const paymentData = {
-            intent: 'CAPTURE',
-            purchase_units: [{
-                reference_id: orderId,
-                amount: {
-                    currency_code: 'USD',
-                    value: total.toFixed(2),
-                    breakdown: {
-                        item_total: {
-                            currency_code: 'USD',
-                            value: subtotal.toFixed(2)
-                        },
-                        shipping: {
-                            currency_code: 'USD',
-                            value: shipping.toFixed(2)
-                        }
-                    }
-                },
-                items: [{
-                    name: `${product.name} x${quantity}`,
-                    unit_amount: {
-                        currency_code: 'USD',
-                        value: (subtotal / quantity).toFixed(2)
-                    },
-                    quantity: quantity.toString(),
-                    category: 'PHYSICAL_GOODS'
-                }],
-                description: `Boarding Pass Print - ${product.size}`
-            }],
-            application_context: {
+        const payment = {
+            intent: 'sale',
+            payer: {
+                payment_method: 'paypal'
+            },
+            redirect_urls: {
                 return_url: `${process.env.FRONTEND_URL}/payment/success?orderId=${orderId}`,
-                cancel_url: `${process.env.FRONTEND_URL}/payment/cancel?orderId=${orderId}`,
-                brand_name: 'Boarding Pass Print',
-                landing_page: 'BILLING',
-                user_action: 'PAY_NOW'
-            }
+                cancel_url: `${process.env.FRONTEND_URL}/payment/cancel?orderId=${orderId}`
+            },
+            transactions: [{
+                item_list: {
+                    items: [{
+                        name: `${product.name} x${quantity}`,
+                        sku: productId,
+                        price: subtotal.toFixed(2),
+                        currency: 'USD',
+                        quantity: 1
+                    }, {
+                        name: 'Shipping',
+                        sku: 'shipping',
+                        price: shipping.toFixed(2),
+                        currency: 'USD',
+                        quantity: 1
+                    }]
+                },
+                amount: {
+                    currency: 'USD',
+                    total: total.toFixed(2)
+                },
+                description: `Boarding Pass Print - ${product.size}`
+            }]
         };
 
-        const paymentResponse = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`
-            },
-            body: JSON.stringify(paymentData)
-        });
+        paypal.payment.create(payment, (error, payment) => {
+            if (error) {
+                console.error('PayPal payment creation error:', error);
+                return res.status(500).json({ error: 'Payment creation failed' });
+            }
 
-        const payment = await paymentResponse.json();
+            // Store payment ID in order
+            db.updateOrder(orderId, { paypalPaymentId: payment.id });
 
-        if (!paymentResponse.ok) {
-            console.error('PayPal payment creation error:', payment);
-            return res.status(500).json({ error: 'Payment creation failed' });
-        }
-
-        // Store payment ID in order
-        await db.updateOrder(orderId, { paypalPaymentId: payment.id });
-
-        // Find approval URL
-        const approvalUrl = payment.links.find(link => link.rel === 'approve');
-        
-        res.json({
-            orderId,
-            paymentId: payment.id,
-            approvalUrl: approvalUrl.href,
-            totalAmount: total.toFixed(2)
+            // Find approval URL
+            const approvalUrl = payment.links.find(link => link.rel === 'approval_url');
+            
+            res.json({
+                orderId,
+                paymentId: payment.id,
+                approvalUrl: approvalUrl.href,
+                totalAmount: total.toFixed(2)
+            });
         });
 
     } catch (error) {
@@ -167,48 +151,46 @@ router.post('/execute-payment', authMiddleware, [
             return res.status(404).json({ error: 'Order not found' });
         }
 
-        // Capture PayPal payment
-        const accessToken = await getPayPalAccessToken();
-        
-        const captureResponse = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders/${paymentId}/capture`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`
+        const execute_payment_json = {
+            payer_id: payerId,
+            transactions: [{
+                amount: {
+                    currency: 'USD',
+                    total: order.totalAmount
+                }
+            }]
+        };
+
+        paypal.payment.execute(paymentId, execute_payment_json, async (error, payment) => {
+            if (error) {
+                console.error('PayPal payment execution error:', error);
+                await db.updateOrder(orderId, { 
+                    paymentStatus: 'failed',
+                    status: 'cancelled'
+                });
+                return res.status(500).json({ error: 'Payment execution failed' });
             }
-        });
 
-        const captureResult = await captureResponse.json();
-
-        if (!captureResponse.ok) {
-            console.error('PayPal payment capture error:', captureResult);
-            await db.updateOrder(orderId, { 
-                paymentStatus: 'failed',
-                status: 'cancelled'
+            // Update order status
+            await db.updateOrder(orderId, {
+                paymentStatus: 'completed',
+                status: 'processing',
+                paypalTransactionId: payment.transactions[0].related_resources[0].sale.id,
+                paidAt: new Date().toISOString()
             });
-            return res.status(500).json({ error: 'Payment capture failed' });
-        }
 
-        // Update order status
-        const transactionId = captureResult.purchase_units[0].payments.captures[0].id;
-        await db.updateOrder(orderId, {
-            paymentStatus: 'completed',
-            status: 'processing',
-            paypalTransactionId: transactionId,
-            paidAt: new Date().toISOString()
-        });
+            // Send confirmation email
+            try {
+                await emailService.sendOrderConfirmation(req.user.email, order);
+            } catch (emailError) {
+                console.error('Email sending error:', emailError);
+            }
 
-        // Send confirmation email
-        try {
-            await emailService.sendOrderConfirmation(req.user.email, order);
-        } catch (emailError) {
-            console.error('Email sending error:', emailError);
-        }
-
-        res.json({
-            message: 'Payment completed successfully',
-            orderId,
-            transactionId
+            res.json({
+                message: 'Payment completed successfully',
+                orderId,
+                transactionId: payment.transactions[0].related_resources[0].sale.id
+            });
         });
 
     } catch (error) {

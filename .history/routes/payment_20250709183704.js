@@ -167,48 +167,46 @@ router.post('/execute-payment', authMiddleware, [
             return res.status(404).json({ error: 'Order not found' });
         }
 
-        // Capture PayPal payment
-        const accessToken = await getPayPalAccessToken();
-        
-        const captureResponse = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders/${paymentId}/capture`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`
+        const execute_payment_json = {
+            payer_id: payerId,
+            transactions: [{
+                amount: {
+                    currency: 'USD',
+                    total: order.totalAmount
+                }
+            }]
+        };
+
+        paypal.payment.execute(paymentId, execute_payment_json, async (error, payment) => {
+            if (error) {
+                console.error('PayPal payment execution error:', error);
+                await db.updateOrder(orderId, { 
+                    paymentStatus: 'failed',
+                    status: 'cancelled'
+                });
+                return res.status(500).json({ error: 'Payment execution failed' });
             }
-        });
 
-        const captureResult = await captureResponse.json();
-
-        if (!captureResponse.ok) {
-            console.error('PayPal payment capture error:', captureResult);
-            await db.updateOrder(orderId, { 
-                paymentStatus: 'failed',
-                status: 'cancelled'
+            // Update order status
+            await db.updateOrder(orderId, {
+                paymentStatus: 'completed',
+                status: 'processing',
+                paypalTransactionId: payment.transactions[0].related_resources[0].sale.id,
+                paidAt: new Date().toISOString()
             });
-            return res.status(500).json({ error: 'Payment capture failed' });
-        }
 
-        // Update order status
-        const transactionId = captureResult.purchase_units[0].payments.captures[0].id;
-        await db.updateOrder(orderId, {
-            paymentStatus: 'completed',
-            status: 'processing',
-            paypalTransactionId: transactionId,
-            paidAt: new Date().toISOString()
-        });
+            // Send confirmation email
+            try {
+                await emailService.sendOrderConfirmation(req.user.email, order);
+            } catch (emailError) {
+                console.error('Email sending error:', emailError);
+            }
 
-        // Send confirmation email
-        try {
-            await emailService.sendOrderConfirmation(req.user.email, order);
-        } catch (emailError) {
-            console.error('Email sending error:', emailError);
-        }
-
-        res.json({
-            message: 'Payment completed successfully',
-            orderId,
-            transactionId
+            res.json({
+                message: 'Payment completed successfully',
+                orderId,
+                transactionId: payment.transactions[0].related_resources[0].sale.id
+            });
         });
 
     } catch (error) {
