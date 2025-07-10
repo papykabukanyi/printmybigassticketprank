@@ -75,17 +75,12 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/upload', uploadRoutes);
 
 // Serve frontend
-app.get('/admin*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
-
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Catch all other routes and serve main page
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    if (req.path.startsWith('/admin')) {
+        res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+    } else {
+        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    }
 });
 
 // Error handling middleware

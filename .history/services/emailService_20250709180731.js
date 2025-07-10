@@ -205,11 +205,6 @@ class EmailService {
     }
 
     async sendWelcomeEmail(email, firstName) {
-        if (!this.transporter || !process.env.SMTP_USER) {
-            console.log('📧 Email not sent - SMTP not configured');
-            return { messageId: 'not-configured' };
-        }
-        
         const mailOptions = {
             from: process.env.EMAIL_FROM,
             to: email,

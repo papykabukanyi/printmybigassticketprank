@@ -206,7 +206,7 @@ router.get('/orders/:id', adminMiddleware, async (req, res) => {
 });
 
 // Send custom email to customer
-router.post('/orders/:id/email', adminMiddleware, [
+router.post('/orders/:id/email', [
     body('subject').notEmpty().trim(),
     body('message').notEmpty().trim()
 ], async (req, res) => {

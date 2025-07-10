@@ -77,7 +77,7 @@ router.get('/orders', adminMiddleware, async (req, res) => {
 });
 
 // Update order status
-router.put('/orders/:id/status', adminMiddleware, [
+router.put('/orders/:id/status', [
     body('status').isIn(['pending', 'processing', 'printing', 'shipped', 'delivered', 'cancelled'])
 ], async (req, res) => {
     try {
@@ -129,7 +129,7 @@ router.put('/orders/:id/status', adminMiddleware, [
 });
 
 // Add tracking number
-router.put('/orders/:id/tracking', adminMiddleware, [
+router.put('/orders/:id/tracking', [
     body('trackingNumber').notEmpty().trim(),
     body('carrier').optional().trim(),
     body('estimatedDelivery').optional().isISO8601()
@@ -177,7 +177,7 @@ router.put('/orders/:id/tracking', adminMiddleware, [
 });
 
 // Get order details
-router.get('/orders/:id', adminMiddleware, async (req, res) => {
+router.get('/orders/:id', async (req, res) => {
     try {
         const order = await db.getOrderById(req.params.id);
         if (!order) {
@@ -206,7 +206,7 @@ router.get('/orders/:id', adminMiddleware, async (req, res) => {
 });
 
 // Send custom email to customer
-router.post('/orders/:id/email', adminMiddleware, [
+router.post('/orders/:id/email', [
     body('subject').notEmpty().trim(),
     body('message').notEmpty().trim()
 ], async (req, res) => {
