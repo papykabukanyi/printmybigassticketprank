@@ -81,14 +81,6 @@ app.use('/api/admin', authMiddleware, adminRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/upload', uploadRoutes);
 
-// Config endpoint for frontend
-app.get('/api/config', (req, res) => {
-    res.json({
-        paypalClientId: process.env.PAYPAL_CLIENT_ID || 'sb',
-        environment: process.env.NODE_ENV || 'development'
-    });
-});
-
 // Serve frontend
 app.get('/admin*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));

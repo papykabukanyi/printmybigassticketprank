@@ -22,8 +22,7 @@
   "license": "ISC",
   "description": "E-commerce platform for printing large-format boarding passes with admin panel, PayPal integration, and order management.",
   "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=8.0.0"
+    "node": ">=16.0.0"
   },
   "dependencies": {
     "@paypal/paypal-js": "^8.2.0",

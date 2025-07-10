@@ -41,9 +41,7 @@ app.use(limiter);
 
 // CORS configuration
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production' 
-        ? ['https://*.railway.app', 'https://*.up.railway.app']
-        : 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true
 }));
 
@@ -60,9 +58,7 @@ app.use(session({
     saveUninitialized: false,
     cookie: { 
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        httpOnly: true,
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
 }));
 
@@ -80,14 +76,6 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/admin', authMiddleware, adminRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/upload', uploadRoutes);
-
-// Config endpoint for frontend
-app.get('/api/config', (req, res) => {
-    res.json({
-        paypalClientId: process.env.PAYPAL_CLIENT_ID || 'sb',
-        environment: process.env.NODE_ENV || 'development'
-    });
-});
 
 // Serve frontend
 app.get('/admin*', (req, res) => {
@@ -110,38 +98,9 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    
-    // Initialize admin user on first start if needed
-    if (process.env.NODE_ENV === 'production' && process.env.RAILWAY_ENVIRONMENT) {
-        setTimeout(async () => {
-            try {
-                const db = require('./config/database');
-                const bcrypt = require('bcryptjs');
-                
-                const adminEmail = process.env.ADMIN_EMAIL || 'admin@boardingpassprint.com';
-                const existingAdmin = await db.getUserByEmail(adminEmail);
-                
-                if (!existingAdmin) {
-                    const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'admin123', 12);
-                    const adminData = {
-                        email: adminEmail,
-                        password: hashedPassword,
-                        firstName: 'Admin',
-                        lastName: 'User',
-                        role: 'admin',
-                        createdAt: new Date().toISOString()
-                    };
-                    await db.createUser(adminData);
-                    console.log('Admin user created automatically');
-                }
-            } catch (error) {
-                console.log('Admin user creation skipped:', error.message);
-            }
-        }, 5000);
-    }
 });
 
 module.exports = app;
