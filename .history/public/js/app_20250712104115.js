@@ -460,7 +460,8 @@ async function showMyOrders() {
             const orders = await response.json();
             displayOrders(orders);
             
-            showModalOnTop('ordersModal');
+            const modal = new bootstrap.Modal(document.getElementById('ordersModal'));
+            modal.show();
         } else {
             showAlert('Failed to load orders.', 'danger');
         }

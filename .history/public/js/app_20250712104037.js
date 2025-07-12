@@ -161,7 +161,8 @@ async function selectProduct(productId) {
         
         updateOrderSummary();
         
-        showModalOnTop('orderModal');
+        const modal = new bootstrap.Modal(document.getElementById('orderModal'));
+        modal.show();
     } catch (error) {
         console.error('Product selection error:', error);
         showAlert('Error loading product details.', 'danger');
@@ -342,11 +343,13 @@ async function proceedToPayment() {
 
 // Authentication functions
 function showLoginModal() {
-    showModalOnTop('loginModal');
+    const modal = new bootstrap.Modal(document.getElementById('loginModal'));
+    modal.show();
 }
 
 function showRegisterModal() {
-    showModalOnTop('registerModal');
+    const modal = new bootstrap.Modal(document.getElementById('registerModal'));
+    modal.show();
 }
 
 async function login() {
@@ -460,7 +463,8 @@ async function showMyOrders() {
             const orders = await response.json();
             displayOrders(orders);
             
-            showModalOnTop('ordersModal');
+            const modal = new bootstrap.Modal(document.getElementById('ordersModal'));
+            modal.show();
         } else {
             showAlert('Failed to load orders.', 'danger');
         }
@@ -786,7 +790,8 @@ function approveCustomization() {
 
 // Show authentication options
 function showAuthOptions() {
-    showModalOnTop('authOptionsModal');
+    const modal = new bootstrap.Modal(document.getElementById('authOptionsModal'));
+    modal.show();
 }
 
 // Hide authentication options

@@ -47,13 +47,10 @@
             background: #f8f9ff;
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            z-index: 1;
         }
         .upload-area:hover {
             background: #e6f3ff;
             border-color: #0056b3;
-            z-index: 1;
         }
         .step-indicator {
             background: #e9ecef;
@@ -72,38 +69,16 @@
         }
         .custom-modal {
             backdrop-filter: blur(5px);
-            z-index: 9999 !important;
+            z-index: 1055 !important;
         }
         .custom-modal .modal-dialog {
-            z-index: 10000 !important;
+            z-index: 1056 !important;
         }
         .modal-backdrop {
-            z-index: 9998 !important;
+            z-index: 1054 !important;
         }
         .modal-open {
             overflow: hidden;
-        }
-        /* Additional modal fixes */
-        .modal {
-            z-index: 9999 !important;
-        }
-        .modal.show {
-            display: block !important;
-            z-index: 9999 !important;
-        }
-        .modal-backdrop.show {
-            opacity: 0.5;
-            z-index: 9998 !important;
-        }
-        /* Ensure customization modal appears on top */
-        #customizeModal {
-            z-index: 10001 !important;
-        }
-        #customizeModal .modal-dialog {
-            z-index: 10002 !important;
-        }
-        #customizeModal.show {
-            z-index: 10001 !important;
         }
         .navbar-brand {
             font-weight: bold;
@@ -113,33 +88,6 @@
             font-size: 3rem;
             color: #007bff;
             margin-bottom: 20px;
-        }
-        /* File upload improvements */
-        .upload-area {
-            position: relative;
-            z-index: 1;
-        }
-        .upload-area:hover {
-            background: #e6f3ff;
-            border-color: #0056b3;
-            z-index: 1;
-        }
-        /* Ensure file inputs work properly */
-        input[type="file"] {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-        .upload-area input[type="file"] {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
         }
     </style>
 </head>
@@ -492,7 +440,7 @@
     </div>
 
     <!-- Authentication Options Modal -->
-    <div class="modal fade custom-modal" id="authOptionsModal" tabindex="-1">
+    <div class="modal fade" id="authOptionsModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -523,7 +471,7 @@
     </div>
 
     <!-- Login Modal -->
-    <div class="modal fade custom-modal" id="loginModal" tabindex="-1">
+    <div class="modal fade" id="loginModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -551,7 +499,7 @@
     </div>
 
     <!-- Register Modal -->
-    <div class="modal fade custom-modal" id="registerModal" tabindex="-1">
+    <div class="modal fade" id="registerModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -597,7 +545,7 @@
     </div>
 
     <!-- Orders Modal -->
-    <div class="modal fade custom-modal" id="ordersModal" tabindex="-1">
+    <div class="modal fade" id="ordersModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">

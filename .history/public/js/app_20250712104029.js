@@ -161,7 +161,8 @@ async function selectProduct(productId) {
         
         updateOrderSummary();
         
-        showModalOnTop('orderModal');
+        const modal = new bootstrap.Modal(document.getElementById('orderModal'));
+        modal.show();
     } catch (error) {
         console.error('Product selection error:', error);
         showAlert('Error loading product details.', 'danger');
@@ -342,11 +343,13 @@ async function proceedToPayment() {
 
 // Authentication functions
 function showLoginModal() {
-    showModalOnTop('loginModal');
+    const modal = new bootstrap.Modal(document.getElementById('loginModal'));
+    modal.show();
 }
 
 function showRegisterModal() {
-    showModalOnTop('registerModal');
+    const modal = new bootstrap.Modal(document.getElementById('registerModal'));
+    modal.show();
 }
 
 async function login() {
@@ -460,7 +463,8 @@ async function showMyOrders() {
             const orders = await response.json();
             displayOrders(orders);
             
-            showModalOnTop('ordersModal');
+            const modal = new bootstrap.Modal(document.getElementById('ordersModal'));
+            modal.show();
         } else {
             showAlert('Failed to load orders.', 'danger');
         }
@@ -659,10 +663,25 @@ async function executePayment(paymentId, payerId, orderId) {
 
 // Open print customization modal
 function openCustomizeModal() {
-    showModalOnTop('customizeModal', {
+    // Ensure modal displays on top
+    const customizeModal = document.getElementById('customizeModal');
+    customizeModal.style.zIndex = '10001';
+    
+    const modal = new bootstrap.Modal(customizeModal, {
         backdrop: 'static',
         keyboard: false
     });
+    
+    // Add event listener to fix z-index when shown
+    customizeModal.addEventListener('shown.bs.modal', function() {
+        this.style.zIndex = '10001';
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.style.zIndex = '10000';
+        }
+    });
+    
+    modal.show();
     updateCustomizationSummary();
 }
 
@@ -786,7 +805,8 @@ function approveCustomization() {
 
 // Show authentication options
 function showAuthOptions() {
-    showModalOnTop('authOptionsModal');
+    const modal = new bootstrap.Modal(document.getElementById('authOptionsModal'));
+    modal.show();
 }
 
 // Hide authentication options
