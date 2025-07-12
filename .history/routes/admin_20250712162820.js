@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../config/database');
 const authMiddleware = require('../middleware/auth');
-const { adminMiddleware, requirePermission } = require('../middleware/admin');
+const adminMiddleware = require('../middleware/admin');
 const emailService = require('../services/emailService');
 
 const router = express.Router();

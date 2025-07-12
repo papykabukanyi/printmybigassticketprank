@@ -528,263 +528,6 @@ function updatePayPalSettings() {
     showAlert('PayPal settings would be updated in production. This requires server restart.', 'info');
 }
 
-// Admin Management Functions (Super Admin only)
-function showAdmins() {
-    if (!currentAdmin.permissions || !currentAdmin.permissions.includes('super_admin')) {
-        showAlert('Access denied. Super admin permissions required.', 'danger');
-        return;
-    }
-
-    hideAllContent();
-    document.getElementById('admins-content').style.display = 'block';
-    document.getElementById('page-title').textContent = 'Admin Management';
-    setActiveNav(3);
-    loadAdmins();
-}
-
-async function loadAdmins() {
-    try {
-        const response = await fetch(`${API_BASE}/admin/admins`, {
-            credentials: 'include'
-        });
-
-        if (response.ok) {
-            const admins = await response.json();
-            displayAdmins(admins);
-        } else {
-            throw new Error('Failed to load admins');
-        }
-    } catch (error) {
-        console.error('Load admins error:', error);
-        showAlert('Failed to load admin users', 'danger');
-    }
-}
-
-function displayAdmins(admins) {
-    const container = document.getElementById('admins-container');
-    if (!container) {
-        // Create admins container if it doesn't exist
-        createAdminsContainer();
-        return displayAdmins(admins);
-    }
-
-    container.innerHTML = `
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5>Admin Users</h5>
-            <button type="button" class="btn btn-primary" onclick="showAddAdminModal()">
-                <i class="bi bi-plus"></i> Add Admin
-            </button>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Permissions</th>
-                        <th>Status</th>
-                        <th>Last Login</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${admins.map(admin => `
-                        <tr>
-                            <td>${admin.firstName} ${admin.lastName}</td>
-                            <td>${admin.email}</td>
-                            <td>
-                                <span class="badge ${admin.permissions && admin.permissions.includes('super_admin') ? 'bg-danger' : 'bg-primary'}">
-                                    ${admin.permissions && admin.permissions.includes('super_admin') ? 'Super Admin' : 'Admin'}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge ${admin.isActive !== 'false' ? 'bg-success' : 'bg-secondary'}">
-                                    ${admin.isActive !== 'false' ? 'Active' : 'Inactive'}
-                                </span>
-                            </td>
-                            <td>${admin.lastLogin ? new Date(admin.lastLogin).toLocaleDateString() : 'Never'}</td>
-                            <td>
-                                ${admin.permissions && admin.permissions.includes('super_admin') ? 
-                                    '<span class="text-muted">Protected</span>' :
-                                    `<div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" onclick="editAdminPermissions('${admin.id}')">
-                                            <i class="bi bi-key"></i>
-                                        </button>
-                                        <button class="btn btn-outline-${admin.isActive !== 'false' ? 'danger' : 'success'}" 
-                                                onclick="${admin.isActive !== 'false' ? 'deactivateAdmin' : 'activateAdmin'}('${admin.id}')">
-                                            <i class="bi bi-${admin.isActive !== 'false' ? 'x-circle' : 'check-circle'}"></i>
-                                        </button>
-                                    </div>`
-                                }
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        </div>
-    `;
-}
-
-function createAdminsContainer() {
-    const mainContent = document.querySelector('.main-content');
-    const adminsContent = document.createElement('div');
-    adminsContent.id = 'admins-content';
-    adminsContent.className = 'content-section p-4';
-    adminsContent.style.display = 'none';
-    adminsContent.innerHTML = '<div id="admins-container"></div>';
-    mainContent.appendChild(adminsContent);
-}
-
-function showAddAdminModal() {
-    // Create and show modal for adding new admin
-    const modalHtml = `
-        <div class="modal fade" id="addAdminModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Add New Admin</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="addAdminForm">
-                            <div class="mb-3">
-                                <label class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="adminFirstName" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="adminLastName" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Email</label>
-                                <input type="email" class="form-control" id="adminEmail" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Password</label>
-                                <input type="password" class="form-control" id="adminPassword" required minlength="8">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Permissions</label>
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="permOrders" value="orders" checked>
-                                    <label class="form-check-label" for="permOrders">Manage Orders</label>
-                                </div>
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="permUsers" value="users" checked>
-                                    <label class="form-check-label" for="permUsers">Manage Users</label>
-                                </div>
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="permSettings" value="settings" checked>
-                                    <label class="form-check-label" for="permSettings">Manage Settings</label>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" onclick="addAdmin()">Add Admin</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-    const modal = new bootstrap.Modal(document.getElementById('addAdminModal'));
-    modal.show();
-    
-    // Remove modal from DOM when hidden
-    document.getElementById('addAdminModal').addEventListener('hidden.bs.modal', function() {
-        this.remove();
-    });
-}
-
-async function addAdmin() {
-    try {
-        const firstName = document.getElementById('adminFirstName').value;
-        const lastName = document.getElementById('adminLastName').value;
-        const email = document.getElementById('adminEmail').value;
-        const password = document.getElementById('adminPassword').value;
-        
-        const permissions = [];
-        if (document.getElementById('permOrders').checked) permissions.push('orders');
-        if (document.getElementById('permUsers').checked) permissions.push('users');
-        if (document.getElementById('permSettings').checked) permissions.push('settings');
-
-        const response = await fetch(`${API_BASE}/admin/admins`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                firstName,
-                lastName,
-                email,
-                password,
-                permissions
-            })
-        });
-
-        const data = await response.json();
-        
-        if (response.ok) {
-            showAlert('Admin added successfully', 'success');
-            bootstrap.Modal.getInstance(document.getElementById('addAdminModal')).hide();
-            loadAdmins(); // Refresh the list
-        } else {
-            showAlert(data.error || 'Failed to add admin', 'danger');
-        }
-    } catch (error) {
-        console.error('Add admin error:', error);
-        showAlert('Network error. Please try again.', 'danger');
-    }
-}
-
-async function deactivateAdmin(adminId) {
-    if (!confirm('Are you sure you want to deactivate this admin?')) return;
-
-    try {
-        const response = await fetch(`${API_BASE}/admin/admins/${adminId}/deactivate`, {
-            method: 'PUT',
-            credentials: 'include'
-        });
-
-        const data = await response.json();
-        
-        if (response.ok) {
-            showAlert('Admin deactivated successfully', 'success');
-            loadAdmins(); // Refresh the list
-        } else {
-            showAlert(data.error || 'Failed to deactivate admin', 'danger');
-        }
-    } catch (error) {
-        console.error('Deactivate admin error:', error);
-        showAlert('Network error. Please try again.', 'danger');
-    }
-}
-
-async function activateAdmin(adminId) {
-    try {
-        const response = await fetch(`${API_BASE}/admin/admins/${adminId}/activate`, {
-            method: 'PUT',
-            credentials: 'include'
-        });
-
-        const data = await response.json();
-        
-        if (response.ok) {
-            showAlert('Admin activated successfully', 'success');
-            loadAdmins(); // Refresh the list
-        } else {
-            showAlert(data.error || 'Failed to activate admin', 'danger');
-        }
-    } catch (error) {
-        console.error('Activate admin error:', error);
-        showAlert('Network error. Please try again.', 'danger');
-    }
-}
-
 // Utility functions
 function refreshData() {
     if (document.getElementById('dashboard-content').style.display !== 'none') {
@@ -798,7 +541,17 @@ function refreshData() {
 }
 
 async function logout() {
-    await forceLogout();
+    try {
+        await fetch(`${API_BASE}/auth/logout`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+        
+        window.location.href = '/';
+    } catch (error) {
+        console.error('Logout error:', error);
+        window.location.href = '/';
+    }
 }
 
 function downloadBoardingPass(fileId) {
@@ -816,16 +569,6 @@ function addTrackingNumber(orderId) {
     updateOrderStatusModal(orderId);
     document.getElementById('new-status').value = 'shipped';
     document.getElementById('tracking-fields').style.display = 'block';
-}
-
-// Function to extend session from modal
-function extendSessionFromModal() {
-    // Hide modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById('sessionWarningModal'));
-    if (modal) modal.hide();
-    
-    // Extend session
-    extendSession();
 }
 
 // Utility function to show alerts

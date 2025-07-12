@@ -19,7 +19,7 @@ const uploadRoutes = require('./routes/upload');
 
 // Import middleware
 const authMiddleware = require('./middleware/auth');
-const { adminMiddleware } = require('./middleware/admin');
+const adminMiddleware = require('./middleware/admin');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -138,15 +138,13 @@ app.listen(PORT, '0.0.0.0', () => {
                 const existingAdmin = await db.getUserByEmail(adminEmail);
                 
                 if (!existingAdmin) {
-                    const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'SecureAdmin2025!', 12);
+                    const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'admin123', 12);
                     const adminData = {
                         email: adminEmail,
                         password: hashedPassword,
-                        firstName: 'Super',
-                        lastName: 'Admin',
+                        firstName: 'Admin',
+                        lastName: 'User',
                         role: 'admin',
-                        permissions: JSON.stringify(['super_admin', 'all']),
-                        isActive: 'true',
                         createdAt: new Date().toISOString()
                     };
                     await db.createUser(adminData);

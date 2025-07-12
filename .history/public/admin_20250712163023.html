@@ -96,9 +96,6 @@
                     <div class="d-flex justify-content-between align-items-center p-4 border-bottom bg-white">
                         <h2 id="page-title">Dashboard</h2>
                         <div class="d-flex align-items-center">
-                            <span class="me-3" id="session-timer" style="font-size: 0.9rem; color: #666;">
-                                Session: <span id="time-left">15:00</span>
-                            </span>
                             <span class="me-3">Welcome, <span id="admin-name">Admin</span></span>
                             <div class="btn-group">
                                 <button type="button" class="btn btn-outline-primary btn-sm" onclick="refreshData()">
@@ -387,28 +384,7 @@
         </div>
     </div>
 
-    <!-- Session Warning Modal -->
-    <div class="modal fade" id="sessionWarningModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title">
-                        <i class="bi bi-exclamation-triangle"></i> Session Expiring
-                    </h5>
-                </div>
-                <div class="modal-body">
-                    <p>Your admin session will expire in <span id="modal-countdown">2</span> minutes.</p>
-                    <p>Do you want to extend your session?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="forceLogout()">Logout Now</button>
-                    <button type="button" class="btn btn-primary" onclick="extendSessionFromModal()">Extend Session</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/admin.js"></script>
+    <script src="/js/admin.js"></script>
 </body>
 </html>

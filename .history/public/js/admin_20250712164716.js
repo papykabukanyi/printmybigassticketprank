@@ -818,16 +818,6 @@ function addTrackingNumber(orderId) {
     document.getElementById('tracking-fields').style.display = 'block';
 }
 
-// Function to extend session from modal
-function extendSessionFromModal() {
-    // Hide modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById('sessionWarningModal'));
-    if (modal) modal.hide();
-    
-    // Extend session
-    extendSession();
-}
-
 // Utility function to show alerts
 function showAlert(message, type = 'info') {
     const alertDiv = document.createElement('div');
