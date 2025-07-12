@@ -42,8 +42,24 @@ app.use(limiter);
 // CORS configuration
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
-        ? [process.env.FRONTEND_URL || 'https://your-app.railway.app']
-        : true,
+        ? function (origin, callback) {
+            // Allow requests with no origin (like mobile apps or Postman)
+            if (!origin) return callback(null, true);
+            
+            // Allow Railway domains
+            if (origin.includes('.railway.app') || origin.includes('.up.railway.app')) {
+                return callback(null, true);
+            }
+            
+            // Allow localhost for development
+            if (origin.includes('localhost')) {
+                return callback(null, true);
+            }
+            
+            // Reject all other origins
+            return callback(new Error('Not allowed by CORS'), false);
+        }
+        : true, // Allow all origins in development
     credentials: true
 }));
 
@@ -89,22 +105,18 @@ app.get('/api/config', (req, res) => {
     });
 });
 
-// Serve frontend pages
+// Serve frontend
+app.get('/admin*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
-
-// Handle 404 for unmatched routes
-app.use((req, res) => {
-    if (req.path.startsWith('/api/')) {
-        res.status(404).json({ error: 'API endpoint not found' });
-    } else {
-        res.sendFile(path.join(__dirname, 'public', 'index.html'));
-    }
+// Catch all other routes and serve main page
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Error handling middleware

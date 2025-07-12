@@ -89,22 +89,18 @@ app.get('/api/config', (req, res) => {
     });
 });
 
-// Serve frontend pages
+// Serve frontend
+app.get('/admin*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
-
-// Handle 404 for unmatched routes
-app.use((req, res) => {
-    if (req.path.startsWith('/api/')) {
-        res.status(404).json({ error: 'API endpoint not found' });
-    } else {
-        res.sendFile(path.join(__dirname, 'public', 'index.html'));
-    }
+// Catch non-API routes and serve main page
+app.get(/^(?!\/api).*/, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Error handling middleware
