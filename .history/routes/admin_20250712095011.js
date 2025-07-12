@@ -56,44 +56,19 @@ router.get('/orders', adminMiddleware, async (req, res) => {
         // Enrich with product and user details
         const enrichedOrders = await Promise.all(paginatedOrders.map(async (order) => {
             const product = await db.getProductById(order.productId);
-            let user = null;
-            
-            // Handle guest vs registered user orders
-            if (order.userId) {
-                user = await db.getUserById(order.userId);
-                if (user) {
-                    user = { 
-                        id: user.id, 
-                        email: user.email, 
-                        firstName: user.firstName, 
-                        lastName: user.lastName 
-                    };
-                }
-            }
+            const user = await db.getUserById(order.userId);
             
             return {
                 ...order,
                 product,
-                user,
-                isGuest: order.isGuest || !order.userId,
-                guestEmail: order.guestEmail || null,
-                customerName: order.isGuest || !order.userId 
-                    ? (order.shippingAddress ? JSON.parse(order.shippingAddress).fullName : 'Guest Customer')
-                    : user ? `${user.firstName} ${user.lastName}` : 'Unknown',
-                customerEmail: order.isGuest || !order.userId 
-                    ? order.guestEmail 
-                    : user ? user.email : null,
-                shippingAddress: typeof order.shippingAddress === 'string' 
-                    ? JSON.parse(order.shippingAddress || '{}') 
-                    : order.shippingAddress || {},
-                boardingPassDetails: typeof order.boardingPassDetails === 'string' 
-                    ? JSON.parse(order.boardingPassDetails || '{}') 
-                    : order.boardingPassDetails || {},
-                customizations: order.customizations 
-                    ? (typeof order.customizations === 'string' 
-                        ? JSON.parse(order.customizations) 
-                        : order.customizations)
-                    : null
+                user: user ? { 
+                    id: user.id, 
+                    email: user.email, 
+                    firstName: user.firstName, 
+                    lastName: user.lastName 
+                } : null,
+                shippingAddress: JSON.parse(order.shippingAddress || '{}'),
+                boardingPassDetails: JSON.parse(order.boardingPassDetails || '{}')
             };
         }));
 
