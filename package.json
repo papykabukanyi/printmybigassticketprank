@@ -17,7 +17,8 @@
     "check-env": "node scripts/check-environment.js",
     "railway-vars": "node scripts/railway-env-template.js",
     "railway-setup": "node scripts/railway-secure-setup.js",
-    "troubleshoot": "node scripts/troubleshoot-railway.js"
+    "troubleshoot": "node scripts/troubleshoot-railway.js",
+    "test-railway": "node scripts/test-railway.js"
   },
   "keywords": [
     "boarding-pass",
