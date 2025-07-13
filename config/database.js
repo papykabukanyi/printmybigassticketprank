@@ -17,6 +17,7 @@ class Database {
                 process.exit(1);
             } else {
                 console.error('⚠️ Running in development mode without Redis');
+                this.redis = null;
                 return;
             }
         }
@@ -60,6 +61,11 @@ class Database {
         this.redis.on('reconnecting', () => {
             console.log('🔄 Reconnecting to Redis...');
         });
+    }
+
+    // Getter for Redis client access
+    get redisClient() {
+        return this.redis;
     }
 
     // User operations

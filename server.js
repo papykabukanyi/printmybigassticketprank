@@ -124,10 +124,15 @@ app.get('/health', async (req, res) => {
     try {
         // Test Redis connection
         const db = require('./config/database');
-        const testKey = 'health-check-' + Date.now();
-        await db.redisClient.set(testKey, 'ok', 'EX', 60); // Expires in 60 seconds
-        await db.redisClient.del(testKey);
-        health.services.redis = 'connected';
+        if (db.redisClient) {
+            const testKey = 'health-check-' + Date.now();
+            await db.redisClient.set(testKey, 'ok', 'EX', 60); // Expires in 60 seconds
+            await db.redisClient.del(testKey);
+            health.services.redis = 'connected';
+        } else {
+            health.services.redis = 'error: Redis client not initialized';
+            health.status = 'degraded';
+        }
     } catch (error) {
         health.services.redis = 'error: ' + error.message;
         health.status = 'degraded';
