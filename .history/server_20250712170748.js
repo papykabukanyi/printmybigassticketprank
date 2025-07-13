@@ -89,16 +89,6 @@ app.get('/api/config', (req, res) => {
     });
 });
 
-// Health check endpoint for Railway
-app.get('/health', (req, res) => {
-    res.status(200).json({ 
-        status: 'healthy', 
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        environment: process.env.NODE_ENV || 'development'
-    });
-});
-
 // Serve frontend pages
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));

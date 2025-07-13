@@ -6,9 +6,8 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "build": "echo 'Build complete'",
-    "postinstall": "npm run test-deps || true",
+    "postinstall": "npm run init-super-admin || true",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "test-deps": "node test-dependencies.js",
     "init-admin": "node scripts/init-admin.js",
     "init-super-admin": "node scripts/init-super-admin.js"
   },
