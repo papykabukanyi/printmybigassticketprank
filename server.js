@@ -121,19 +121,22 @@ app.get('/health', async (req, res) => {
         services: {}
     };
     
+    // Test Redis connection
     try {
-        // Test Redis connection
         const db = require('./config/database');
-        if (db.redisClient) {
-            const testKey = 'health-check-' + Date.now();
-            await db.redisClient.set(testKey, 'ok', 'EX', 60); // Expires in 60 seconds
-            await db.redisClient.del(testKey);
-            health.services.redis = 'connected';
-        } else {
+        
+        if (!db.isRedisAvailable()) {
             health.services.redis = 'error: Redis client not initialized';
             health.status = 'degraded';
+        } else {
+            // Try to perform a simple Redis operation
+            const testKey = 'health-check-' + Date.now();
+            await db.redisClient.set(testKey, 'ok', 'EX', 60);
+            await db.redisClient.del(testKey);
+            health.services.redis = 'connected';
         }
     } catch (error) {
+        console.error('Health check Redis error:', error);
         health.services.redis = 'error: ' + error.message;
         health.status = 'degraded';
     }
@@ -143,6 +146,14 @@ app.get('/health', async (req, res) => {
     
     // Check SMTP config
     health.services.smtp = process.env.SMTP_HOST ? 'configured' : 'not configured';
+    
+    // Environment check
+    health.services.environment_vars = {
+        REDIS_URL: process.env.REDIS_URL ? 'set' : 'missing',
+        NODE_ENV: process.env.NODE_ENV || 'not set',
+        JWT_SECRET: process.env.JWT_SECRET ? 'set' : 'missing',
+        SESSION_SECRET: process.env.SESSION_SECRET ? 'set' : 'missing'
+    };
     
     const statusCode = health.status === 'healthy' ? 200 : 503;
     res.status(statusCode).json(health);

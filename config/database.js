@@ -24,43 +24,48 @@ class Database {
 
         console.log('🔗 Connecting to Redis database...');
         
-        this.redis = new Redis(redisUrl, {
-            retryDelayOnFailover: 100,
-            maxRetriesPerRequest: 3,
-            lazyConnect: true,
-            connectTimeout: 10000,
-            retryAttempts: 5,
-            retryDelayOnClusterDown: 300,
-            retryDelayOnFailover: 100,
-            maxRetriesPerRequest: null,
-            keepAlive: 30000
-        });
+        try {
+            this.redis = new Redis(redisUrl, {
+                retryDelayOnFailover: 100,
+                maxRetriesPerRequest: 3,
+                lazyConnect: true,
+                connectTimeout: 10000,
+                retryAttempts: 5,
+                retryDelayOnClusterDown: 300,
+                retryDelayOnFailover: 100,
+                maxRetriesPerRequest: null,
+                keepAlive: 30000
+            });
 
-        this.redis.on('connect', () => {
-            console.log('✅ Connected to Redis database successfully');
-        });
+            this.redis.on('connect', () => {
+                console.log('✅ Connected to Redis database successfully');
+            });
 
-        this.redis.on('error', (err) => {
-            console.error('❌ Redis connection error:', err.message);
-            if (err.message.includes('ENOTFOUND') || err.message.includes('timeout')) {
-                console.error('💡 Redis connection tips:');
-                console.error('   • Check REDIS_URL format in Railway dashboard');
-                console.error('   • Ensure Redis server is running and accessible');
-                console.error('   • Verify network connectivity');
-            }
-        });
+            this.redis.on('error', (err) => {
+                console.error('❌ Redis connection error:', err.message);
+                if (err.message.includes('ENOTFOUND') || err.message.includes('timeout')) {
+                    console.error('💡 Redis connection tips:');
+                    console.error('   • Check REDIS_URL format in Railway dashboard');
+                    console.error('   • Ensure Redis server is running and accessible');
+                    console.error('   • Verify network connectivity');
+                }
+            });
 
-        this.redis.on('ready', () => {
-            console.log('✅ Redis is ready for database operations');
-        });
+            this.redis.on('ready', () => {
+                console.log('✅ Redis is ready for database operations');
+            });
 
-        this.redis.on('close', () => {
-            console.log('⚠️ Redis connection closed');
-        });
+            this.redis.on('close', () => {
+                console.log('⚠️ Redis connection closed');
+            });
 
-        this.redis.on('reconnecting', () => {
-            console.log('🔄 Reconnecting to Redis...');
-        });
+            this.redis.on('reconnecting', () => {
+                console.log('🔄 Reconnecting to Redis...');
+            });
+        } catch (error) {
+            console.error('❌ Failed to initialize Redis:', error.message);
+            this.redis = null;
+        }
     }
 
     // Getter for Redis client access
@@ -68,8 +73,16 @@ class Database {
         return this.redis;
     }
 
+    // Check if Redis is available
+    isRedisAvailable() {
+        return this.redis !== null && this.redis !== undefined;
+    }
+
     // User operations
     async createUser(userData) {
+        if (!this.isRedisAvailable()) {
+            throw new Error('Redis connection not available');
+        }
         const userId = `user:${Date.now()}:${Math.random().toString(36).substr(2, 9)}`;
         await this.redis.hset(userId, userData);
         await this.redis.sadd('users', userId);
@@ -77,6 +90,9 @@ class Database {
     }
 
     async getUserByEmail(email) {
+        if (!this.isRedisAvailable()) {
+            throw new Error('Redis connection not available');
+        }
         const users = await this.redis.smembers('users');
         for (const userId of users) {
             const user = await this.redis.hgetall(userId);
@@ -88,6 +104,9 @@ class Database {
     }
 
     async getUserById(userId) {
+        if (!this.isRedisAvailable()) {
+            throw new Error('Redis connection not available');
+        }
         const user = await this.redis.hgetall(userId);
         if (Object.keys(user).length > 0) {
             return { id: userId, ...user };
@@ -96,6 +115,9 @@ class Database {
     }
 
     async updateUser(userId, updates) {
+        if (!this.isRedisAvailable()) {
+            throw new Error('Redis connection not available');
+        }
         await this.redis.hset(userId, updates);
         return true;
     }
