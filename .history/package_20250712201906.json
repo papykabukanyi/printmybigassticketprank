@@ -13,8 +13,7 @@
     "test-admin": "node test-admin.js",
     "init-admin": "node scripts/init-admin.js",
     "init-super-admin": "node scripts/init-super-admin.js",
-    "verify-deployment": "node scripts/verify-deployment.js",
-    "check-env": "node scripts/check-environment.js"
+    "verify-deployment": "node scripts/verify-deployment.js"
   },
   "keywords": [
     "boarding-pass",

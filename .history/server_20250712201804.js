@@ -111,36 +111,13 @@ app.get('/api/config', (req, res) => {
 });
 
 // Health check endpoint for Railway
-app.get('/health', async (req, res) => {
-    const health = {
-        status: 'healthy',
+app.get('/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'healthy', 
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
-        environment: process.env.NODE_ENV || 'development',
-        version: require('./package.json').version || '1.0.0',
-        services: {}
-    };
-    
-    try {
-        // Test Redis connection
-        const db = require('./config/database');
-        const testKey = 'health-check-' + Date.now();
-        await db.redisClient.set(testKey, 'ok', 'EX', 60); // Expires in 60 seconds
-        await db.redisClient.del(testKey);
-        health.services.redis = 'connected';
-    } catch (error) {
-        health.services.redis = 'error: ' + error.message;
-        health.status = 'degraded';
-    }
-    
-    // Check PayPal config
-    health.services.paypal = process.env.PAYPAL_CLIENT_ID ? 'configured' : 'not configured';
-    
-    // Check SMTP config
-    health.services.smtp = process.env.SMTP_HOST ? 'configured' : 'not configured';
-    
-    const statusCode = health.status === 'healthy' ? 200 : 503;
-    res.status(statusCode).json(health);
+        environment: process.env.NODE_ENV || 'development'
+    });
 });
 
 // Serve frontend pages
