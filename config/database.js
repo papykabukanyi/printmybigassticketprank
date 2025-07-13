@@ -2,6 +2,7 @@ const Redis = require('ioredis');
 
 class Database {
     constructor() {
+        this.redisAvailable = false;
         const redisUrl = process.env.REDIS_URL;
         
         if (!redisUrl) {
@@ -12,14 +13,11 @@ class Database {
             console.error('   3. Add REDIS_URL with your Redis connection string');
             console.error('   4. Redeploy your application');
             console.error('\n💡 Railway does NOT read .env files - use the dashboard!');
+            console.error('⚠️ Application will start but Redis features will be disabled');
             
-            if (process.env.NODE_ENV === 'production') {
-                process.exit(1);
-            } else {
-                console.error('⚠️ Running in development mode without Redis');
-                this.redis = null;
-                return;
-            }
+            this.redis = null;
+            this.redisAvailable = false;
+            return;
         }
 
         console.log('🔗 Connecting to Redis database...');
@@ -39,10 +37,12 @@ class Database {
 
             this.redis.on('connect', () => {
                 console.log('✅ Connected to Redis database successfully');
+                this.redisAvailable = true;
             });
 
             this.redis.on('error', (err) => {
                 console.error('❌ Redis connection error:', err.message);
+                this.redisAvailable = false;
                 if (err.message.includes('ENOTFOUND') || err.message.includes('timeout')) {
                     console.error('💡 Redis connection tips:');
                     console.error('   • Check REDIS_URL format in Railway dashboard');
@@ -53,10 +53,12 @@ class Database {
 
             this.redis.on('ready', () => {
                 console.log('✅ Redis is ready for database operations');
+                this.redisAvailable = true;
             });
 
             this.redis.on('close', () => {
                 console.log('⚠️ Redis connection closed');
+                this.redisAvailable = false;
             });
 
             this.redis.on('reconnecting', () => {
@@ -65,6 +67,7 @@ class Database {
         } catch (error) {
             console.error('❌ Failed to initialize Redis:', error.message);
             this.redis = null;
+            this.redisAvailable = false;
         }
     }
 
@@ -75,7 +78,7 @@ class Database {
 
     // Check if Redis is available
     isRedisAvailable() {
-        return this.redis !== null && this.redis !== undefined;
+        return this.redisAvailable && this.redis !== null && this.redis !== undefined;
     }
 
     // User operations
@@ -343,3 +346,4 @@ class Database {
 }
 
 module.exports = new Database();
+module.exports.Database = Database;

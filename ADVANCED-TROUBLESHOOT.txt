@@ -1,0 +1,109 @@
+🚨 SITE STILL DOWN AFTER ADDING VARIABLES - ADVANCED TROUBLESHOOTING
+====================================================================
+
+Since you've already added the environment variables but the site is still showing "Application failed to respond", let's troubleshoot deeper issues.
+
+STEP 1: Check Railway Deployment Logs
+------------------------------------
+1. Go to Railway Dashboard → Your Project
+2. Click on "Deployments" or "Logs" tab
+3. Look at the most recent deployment logs
+4. Look for specific error messages
+
+STEP 2: Common Issues When Variables Are Set
+-------------------------------------------
+
+ISSUE A: Redis Connection Problems
+- Even with REDIS_URL set, the Redis server might be down
+- Check if the Redis URL is still valid
+- Try restarting the Redis service
+
+ISSUE B: Port Binding Issues
+- App might not be listening on the correct port
+- Railway expects app to listen on process.env.PORT
+
+ISSUE C: Build Failures
+- Check if the build process completed successfully
+- Look for npm install errors or dependency issues
+
+ISSUE D: Memory/Timeout Issues
+- App might be taking too long to start
+- Check for infinite loops or blocking operations
+
+STEP 3: Quick Diagnostic Commands
+--------------------------------
+Run these in your local terminal to test:
+
+1. Test Redis connection:
+   node -e "const Redis = require('ioredis'); const r = new Redis('redis://default:wipIKRLferhupCxLZxNOirxKzzXFFNTU@centerbeam.proxy.rlwy.net:36797'); r.ping().then(() => console.log('Redis OK')).catch(e => console.log('Redis Error:', e.message));"
+
+2. Test app locally with production settings:
+   NODE_ENV=production npm start
+
+STEP 4: Force Redeploy with Debug
+--------------------------------
+1. In Railway Dashboard:
+   - Go to Settings → Environment
+   - Add this variable:
+     DEBUG=*
+   - Redeploy
+
+2. Check logs again for more detailed error messages
+
+STEP 5: Alternative Redis URL (if current one fails)
+---------------------------------------------------
+If Redis connection is the issue, the current Redis server might be down.
+You may need a new Redis URL. Try these free options:
+
+1. Railway Redis Add-on:
+   - In Railway, click "Add Service"
+   - Select "Redis"
+   - Use the generated REDIS_URL
+
+2. Upstash Redis (free tier):
+   - Go to upstash.com
+   - Create free Redis database
+   - Use their connection URL
+
+STEP 6: Minimal Working Configuration
+------------------------------------
+Try removing all variables except these core ones:
+
+REDIS_URL=redis://default:wipIKRLferhupCxLZxNOirxKzzXFFNTU@centerbeam.proxy.rlwy.net:36797
+NODE_ENV=production
+PORT=3000
+SESSION_SECRET=railway-boarding-pass-session-secret-2025
+JWT_SECRET=railway-boarding-pass-jwt-secret-2025
+
+Remove PayPal and SMTP variables temporarily to isolate the issue.
+
+STEP 7: Check Railway Service Status
+-----------------------------------
+1. Visit Railway status page: status.railway.app
+2. Check if there are any ongoing issues
+
+STEP 8: Emergency Fallback - New Deployment
+------------------------------------------
+If nothing works:
+1. Create a new Railway project
+2. Connect the same GitHub repo
+3. Set environment variables fresh
+4. Deploy to new project
+
+WHAT TO LOOK FOR IN LOGS:
+- "ECONNREFUSED" = Connection refused (likely Redis)
+- "ENOTFOUND" = DNS resolution failed
+- "TIMEOUT" = Connection timeout
+- "Port already in use" = Port binding issue
+- "Cannot find module" = Missing dependencies
+
+IMMEDIATE ACTION:
+1. Check Railway deployment logs first
+2. Look for specific error messages
+3. Share the error details for targeted fix
+
+The "Application failed to respond" with variables set usually means:
+- Redis server is down/unreachable
+- App is crashing during startup
+- Build process failed
+- Port binding issues

@@ -11,6 +11,7 @@
     "test-deps": "node test-dependencies.js",
     "test-redis": "node test-redis.js",
     "test-admin": "node test-admin.js",
+    "test-railway-fixes": "node scripts/test-railway-fixes.js",
     "init-admin": "node scripts/init-admin.js",
     "init-super-admin": "node scripts/init-super-admin.js",
     "verify-deployment": "node scripts/verify-deployment.js",
