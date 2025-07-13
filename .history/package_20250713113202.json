@@ -16,8 +16,7 @@
     "verify-deployment": "node scripts/verify-deployment.js",
     "check-env": "node scripts/check-environment.js",
     "railway-vars": "node scripts/railway-env-vars.js",
-    "railway-fix": "node scripts/railway-quick-fix.js",
-    "troubleshoot": "node scripts/troubleshoot-railway.js"
+    "railway-fix": "node scripts/railway-quick-fix.js"
   },
   "keywords": [
     "boarding-pass",
