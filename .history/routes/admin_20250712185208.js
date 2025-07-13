@@ -15,34 +15,24 @@ router.post('/login', [
     body('password').isLength({ min: 6 })
 ], async (req, res) => {
     try {
-        console.log('🔐 Admin login attempt:', req.body.email);
-        
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            console.log('❌ Validation errors:', errors.array());
             return res.status(400).json({ error: 'Invalid email or password format' });
         }
 
         const { email, password } = req.body;
         
-        console.log('🔍 Looking for user:', email);
         // Get user by email
         const user = await db.getUserByEmail(email);
         if (!user || user.role !== 'admin') {
-            console.log('❌ User not found or not admin:', email, user ? user.role : 'no user');
             return res.status(401).json({ error: 'Invalid credentials or insufficient permissions' });
         }
-
-        console.log('✅ Admin user found:', user.email);
 
         // Check password
         const isValidPassword = await bcrypt.compare(password, user.password);
         if (!isValidPassword) {
-            console.log('❌ Invalid password for:', email);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
-
-        console.log('✅ Password valid, generating token...');
 
         // Generate JWT token with short expiration for admin
         const token = jwt.sign(
@@ -56,8 +46,6 @@ router.post('/login', [
             { expiresIn: '15m' } // 15 minutes for admin sessions
         );
 
-        console.log('✅ Token generated, setting cookie...');
-
         // Set HTTP-only cookie
         res.cookie('adminToken', token, {
             httpOnly: true,
@@ -68,8 +56,6 @@ router.post('/login', [
 
         // Update last login
         await db.updateUserLastLogin(user.id);
-
-        console.log('✅ Admin login successful for:', email);
 
         res.json({
             success: true,
@@ -83,7 +69,7 @@ router.post('/login', [
             }
         });
     } catch (error) {
-        console.error('❌ Admin login error:', error);
+        console.error('Admin login error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
