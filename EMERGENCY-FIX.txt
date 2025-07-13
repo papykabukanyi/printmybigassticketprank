@@ -1,0 +1,80 @@
+🚨 RAILWAY EMERGENCY FIX - COPY THESE VARIABLES NOW!
+==========================================================
+
+Your app is down because Railway can't find environment variables.
+
+STEP 1: Go to Railway Dashboard
+-------------------------------
+1. Open: https://railway.app/dashboard
+2. Find your project: "printmybigassticketprank"
+3. Click on it
+4. Look for "Variables" or "Environment" tab
+5. Click on it
+
+STEP 2: Add These Variables (COPY-PASTE EXACTLY)
+------------------------------------------------
+
+Click "Add Variable" for EACH one below:
+
+Variable Name: REDIS_URL
+Variable Value: redis://default:wipIKRLferhupCxLZxNOirxKzzXFFNTU@centerbeam.proxy.rlwy.net:36797
+
+Variable Name: NODE_ENV
+Variable Value: production
+
+Variable Name: PORT
+Variable Value: 3000
+
+Variable Name: SESSION_SECRET
+Variable Value: railway-boarding-pass-session-secret-2025
+
+Variable Name: JWT_SECRET
+Variable Value: railway-boarding-pass-jwt-secret-2025
+
+Variable Name: JWT_EXPIRES_IN
+Variable Value: 7d
+
+Variable Name: ADMIN_EMAIL
+Variable Value: admin@boardingpassprint.com
+
+Variable Name: ADMIN_PASSWORD
+Variable Value: SecureAdmin2025!
+
+Variable Name: PAYPAL_CLIENT_ID
+Variable Value: Ac6pmPJOdOg9gTpowD1JxvQ0RrFSBH7WiVLt43TsCKJdmI51PWSq6BikGoYdYQotnEotE0yUNk6jxd8U
+
+Variable Name: PAYPAL_CLIENT_SECRET
+Variable Value: ECxG-tx-wLz-2FIuEPvljUyoY21R5a8cHNTYC8Sm9mKdXZspndgng4kJ820qTwrQb5Hpuwcj7RLH4OzA
+
+Variable Name: PAYPAL_MODE
+Variable Value: sandbox
+
+Variable Name: SMTP_HOST
+Variable Value: smtp.gmail.com
+
+Variable Name: SMTP_PORT
+Variable Value: 587
+
+Variable Name: SMTP_USER
+Variable Value: papykabukanyi@gmail.com
+
+Variable Name: SMTP_PASS
+Variable Value: lcqowjuwimhsptwq
+
+Variable Name: EMAIL_FROM
+Variable Value: papykabukanyi@gmail.com
+
+STEP 3: Deploy
+--------------
+After adding ALL variables:
+1. Click "Deploy" or "Redeploy" button
+2. Wait 2-3 minutes for deployment
+3. Your site will work!
+
+CRITICAL NOTES:
+- Don't add quotes around values
+- Copy names and values exactly
+- Must add ALL variables above
+- Railway NEVER reads .env files
+
+Your site will be live once these are set!
