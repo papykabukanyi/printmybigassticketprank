@@ -64,17 +64,24 @@ Variable Value: lcqowjuwimhsptwq
 Variable Name: EMAIL_FROM
 Variable Value: papykabukanyi@gmail.com
 
-STEP 3: Deploy
---------------
+STEP 3: Deploy - UPDATED WITH CLEAN SERVER
+------------------------------------------
 After adding ALL variables:
 1. Click "Deploy" or "Redeploy" button
 2. Wait 2-3 minutes for deployment
 3. Your site will work!
 
+🚀 ULTRA-MINIMAL SERVER DEPLOYED:
+- Removed ALL complex dependencies
+- Only basic Express.js server
+- Health check on /ping endpoint
+- Serves static files from /public
+- No Redis, PayPal, or SMTP required to start
+
 CRITICAL NOTES:
 - Don't add quotes around values
 - Copy names and values exactly
-- Must add ALL variables above
 - Railway NEVER reads .env files
+- Server now starts with MINIMAL dependencies
 
-Your site will be live once these are set!
+✅ Your site will be live with basic functionality once deployed!
